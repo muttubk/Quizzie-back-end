@@ -24,14 +24,27 @@ const questionSchema = mongoose.Schema({
         required: () => this.quizType === 'QnA'
     },
     // TODO: submitted options count
-    // submissionCount: {
-    //     type: {
-    //         option1: Number,
-    //         option2: Number,
-    //         option3: Number,
-    //         option4: Number,
-    //     }
-    // }
+    submissionCount: {
+        type: {
+            "Option 1": {
+                type: Number,
+                default: 0
+            },
+            "Option 2": {
+                type: Number,
+                default: 0
+            },
+            "Option 3": {
+                type: Number,
+                default: 0
+            },
+            "Option 4": {
+                type: Number,
+                default: 0
+            },
+        },
+        default: () => ({})
+    }
 })
 
 const quizSchema = mongoose.Schema({

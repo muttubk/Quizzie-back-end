@@ -14,8 +14,10 @@ const PORT = process.env.PORT || 4000
 // const Quiz = require('./models/quiz')
 
 const User = require('./routes/user')
+const Quiz = require('./routes/quiz')
 
 app.use('/user', User)
+app.use('/quiz', Quiz)
 
 app.get('/', (req, res) => {
     res.send('Hello Server')
