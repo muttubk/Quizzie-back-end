@@ -13,8 +13,8 @@ const errorHandler = (res, error) => {
 // for creating a quiz
 router.post('/create', async (req, res) => {
     try {
-        const { name, quizType, timer, createdBy, questions } = req.body
-        const createdQuiz = await Quiz.create({ name, quizType, timer, createdBy, questions })
+        const { quizName, quizType, timer, createdBy, questions } = req.body
+        const createdQuiz = await Quiz.create({ quizName, quizType, timer, createdBy, questions })
         res.status(200).json({
             status: "Success",
             message: "Quiz created successfully.",
@@ -112,7 +112,7 @@ router.get('/:id', async (req, res) => {
         res.status(200).json({
             status: "Success",
             message: "Successfully fetched quiz details.",
-            data: newquizdata
+            quizData: newquizdata
         })
     } catch (error) {
         errorHandler(res, error)
@@ -121,7 +121,7 @@ router.get('/:id', async (req, res) => {
 
 
 // quiz submission
-router.post('/:id/submit', async (req, res) => {
+router.patch('/submit/:id', async (req, res) => {
     try {
         const { id } = req.params
         const quiz = await Quiz.findOne({ _id: id })
@@ -138,7 +138,7 @@ router.post('/:id/submit', async (req, res) => {
 
         // increasing count of which option is selected for each question
         quiz.questions.forEach((question, idx) => {
-            const questionId = question._id.toString()
+            const questionId = question.id
             const selectedOption = submittedAnswers[questionId]
             // console.log(selectedOption)
             // console.log(quiz.questions[idx].submissionCount[selectedOption])

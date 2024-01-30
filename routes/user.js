@@ -26,7 +26,7 @@ router.post('/register', async (req, res) => {
         }
         const existingUser = await User.findOne({ email })
         if (existingUser) {
-            res.status(409).json({
+            return res.status(409).json({
                 status: 'Failed',
                 error: "User already exists."
             })
@@ -63,7 +63,8 @@ router.post('/login', async (req, res) => {
         res.status(200).json({
             status: "Success",
             message: "You've logged in successfully.",
-            jwtoken
+            jwtoken,
+            user: existingUser.email
         })
     } catch (error) {
         errorHandler(res, error)

@@ -1,44 +1,64 @@
 const mongoose = require('mongoose')
 
 const optionsSchema = mongoose.Schema({
-    text: String,
-    imageURL: String
+    text: {
+        type: String,
+        default: ""
+    },
+    imageURL: {
+        type: String,
+        default: ""
+    }
 })
 
 const questionSchema = mongoose.Schema({
-    title: {
+    id: {
+        type: String
+    },
+    question: {
         type: String,
         required: true
     },
     optionsType: {
         type: String,
-        enum: ['text', 'imageURL', 'text+imageURL'],
+        enum: ['text', 'imageURL', 'textAndImageURL'],
         default: 'text'
     },
     options: {
-        type: [optionsSchema],
-        validate: (val) => val.length >= 2 && val.length <= 4
+        // type: [optionsSchema],
+        type: {
+            option1: {
+                type: optionsSchema,
+                required: true
+            },
+            option2: {
+                type: optionsSchema,
+                required: true
+            },
+            option3: optionsSchema,
+            option4: optionsSchema
+        },
+        validate: (val) => Object.keys(val).length >= 2 && Object.keys(val).length <= 4
     },
     correctAnswer: {
         type: String,
         required: () => this.quizType === 'QnA'
     },
-    // TODO: submitted options count
     submissionCount: {
         type: {
-            "Option 1": {
+            "option1": {
                 type: Number,
                 default: 0
             },
-            "Option 2": {
+            "option2": {
                 type: Number,
                 default: 0
             },
-            "Option 3": {
+            "option3": {
                 type: Number,
                 default: 0
             },
-            "Option 4": {
+            "option4": {
                 type: Number,
                 default: 0
             },
@@ -48,7 +68,7 @@ const questionSchema = mongoose.Schema({
 })
 
 const quizSchema = mongoose.Schema({
-    name: {
+    quizName: {
         type: String,
         required: true
     },
@@ -59,7 +79,7 @@ const quizSchema = mongoose.Schema({
     },
     timer: {
         type: String,
-        enum: ['OFF', '5 sec', '10 sec'],
+        enum: ['OFF', 5, 10],
         default: 'OFF'
     },
     questions: {
