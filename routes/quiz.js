@@ -25,47 +25,63 @@ router.post('/create', async (req, res) => {
     }
 })
 
-// for total created quizzes, questions, impressions
-router.get('/total-created', async (req, res) => {
-    try {
-        const quiz = await Quiz.find({})
-        const quizCreated = quiz.length
-        const questionsCreated = quiz.map(quiz => quiz.questions).flat([1]).length
-        let totalImpressions = 0
-        quiz.forEach(item => {
-            totalImpressions += item.impressions
-        })
-        res.json({
-            quizCreated,
-            questionsCreated,
-            totalImpressions
-        })
-    } catch (error) {
-        errorHandler(res, error)
-    }
-})
+// // for total created quizzes, questions, impressions
+// router.get('/total-created', async (req, res) => {
+//     try {
+//         const quiz = await Quiz.find({})
+//         const quizCreated = quiz.length
+//         const questionsCreated = quiz.map(quiz => quiz.questions).flat([1]).length
+//         let totalImpressions = 0
+//         quiz.forEach(item => {
+//             totalImpressions += item.impressions
+//         })
+//         res.json({
+//             quizCreated,
+//             questionsCreated,
+//             totalImpressions
+//         })
+//     } catch (error) {
+//         errorHandler(res, error)
+//     }
+// })
 
-// for trending quizzes
-router.get('/trending', async (req, res) => {
+// // for trending quizzes
+// router.get('/trending', async (req, res) => {
+//     try {
+//         const quizzes = await Quiz.find({}).sort({ impressions: -1 })
+//         res.json({
+//             status: "Success",
+//             message: "Trending quizzes",
+//             quizzes
+//         })
+//     } catch (error) {
+//         errorHandler(res, error)
+//     }
+// })
+
+// // for quiz analysis
+// router.get('/quiz-analysis', async (req, res) => {
+//     try {
+//         const quizzes = await Quiz.find({}).sort({ createdAt: 'asc' })
+//         res.json({
+//             status: "Success",
+//             quizzes
+//         })
+//     } catch (error) {
+//         errorHandler(res, error)
+//     }
+// })
+
+// get all quizs
+router.get('/', async (req, res) => {
     try {
-        const quizzes = await Quiz.find({}).sort({ impressions: -1 })
+        const { createdby, sortcondition } = req.headers
+        const quizs = sortcondition ?
+            await Quiz.find({ createdBy: createdby }).sort(JSON.parse(sortcondition))
+            : await Quiz.find({ createdBy: createdby })
         res.json({
             status: "Success",
-            message: "Trending quizzes",
-            quizzes
-        })
-    } catch (error) {
-        errorHandler(res, error)
-    }
-})
-
-// for quiz analysis
-router.get('/quiz-analysis', async (req, res) => {
-    try {
-        const quizzes = await Quiz.find({}).sort({ createdAt: 'asc' })
-        res.json({
-            status: "Success",
-            quizzes
+            quizs
         })
     } catch (error) {
         errorHandler(res, error)
@@ -73,7 +89,7 @@ router.get('/quiz-analysis', async (req, res) => {
 })
 
 // for delete quiz
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/:id', async (req, res) => {
     try {
         const { id } = req.params
         const quiz = await Quiz.findOne({ _id: id })
@@ -154,6 +170,27 @@ router.patch('/submit/:id', async (req, res) => {
             message: "Submitted quiz successfully.",
             score,
             // newdata
+        })
+    } catch (error) {
+        errorHandler(res, error)
+    }
+})
+
+// get quiz details for analysis
+router.get('/analysis/:id', async (req, res) => {
+    try {
+        const { createdby } = req.headers
+        const { id } = req.params
+        const quiz = await Quiz.findOne({ createdBy: createdby, _id: id })
+        if (!quiz) {
+            return res.json({
+                status: "Failed",
+                error: "Quiz does not exist"
+            })
+        }
+        res.json({
+            status: "Success",
+            quiz
         })
     } catch (error) {
         errorHandler(res, error)
