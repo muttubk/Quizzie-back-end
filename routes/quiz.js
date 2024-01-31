@@ -25,53 +25,6 @@ router.post('/create', async (req, res) => {
     }
 })
 
-// // for total created quizzes, questions, impressions
-// router.get('/total-created', async (req, res) => {
-//     try {
-//         const quiz = await Quiz.find({})
-//         const quizCreated = quiz.length
-//         const questionsCreated = quiz.map(quiz => quiz.questions).flat([1]).length
-//         let totalImpressions = 0
-//         quiz.forEach(item => {
-//             totalImpressions += item.impressions
-//         })
-//         res.json({
-//             quizCreated,
-//             questionsCreated,
-//             totalImpressions
-//         })
-//     } catch (error) {
-//         errorHandler(res, error)
-//     }
-// })
-
-// // for trending quizzes
-// router.get('/trending', async (req, res) => {
-//     try {
-//         const quizzes = await Quiz.find({}).sort({ impressions: -1 })
-//         res.json({
-//             status: "Success",
-//             message: "Trending quizzes",
-//             quizzes
-//         })
-//     } catch (error) {
-//         errorHandler(res, error)
-//     }
-// })
-
-// // for quiz analysis
-// router.get('/quiz-analysis', async (req, res) => {
-//     try {
-//         const quizzes = await Quiz.find({}).sort({ createdAt: 'asc' })
-//         res.json({
-//             status: "Success",
-//             quizzes
-//         })
-//     } catch (error) {
-//         errorHandler(res, error)
-//     }
-// })
-
 // get all quizs
 router.get('/', async (req, res) => {
     try {
@@ -192,6 +145,40 @@ router.get('/analysis/:id', async (req, res) => {
             status: "Success",
             quiz
         })
+    } catch (error) {
+        errorHandler(res, error)
+    }
+})
+
+// edit/update quiz
+router.patch('/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        const { createdby } = req.headers
+        const { questions, timer } = req.body
+        const quiz = await Quiz.findOne({ _id: id, createdBy: createdby })
+        if (!quiz) {
+            return res.json({
+                status: "Failed",
+                error: "Quiz does not exist"
+            })
+        }
+        const updatedQuiz = await Quiz.findOneAndUpdate({ _id: id }, { questions, timer }, {
+            new: true
+        })
+        if (updatedQuiz) {
+            res.json({
+                status: "Success",
+                message: "Updated quiz successfully",
+                updatedQuiz
+            })
+        }
+        else {
+            res.json({
+                status: "Failed",
+                error: "Something went wrong"
+            })
+        }
     } catch (error) {
         errorHandler(res, error)
     }
