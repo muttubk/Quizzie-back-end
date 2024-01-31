@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const Quiz = require('../models/quiz')
+const isLoggedIn = require('../middlewares/requestAuth')
 
 const errorHandler = (res, error) => {
     res.status(500).json({
@@ -11,10 +12,11 @@ const errorHandler = (res, error) => {
 }
 
 // for creating a quiz
-router.post('/create', async (req, res) => {
+router.post('/create', isLoggedIn, async (req, res) => {
     try {
-        const { quizName, quizType, timer, createdBy, questions } = req.body
-        const createdQuiz = await Quiz.create({ quizName, quizType, timer, createdBy, questions })
+        const user = req.user
+        const { quizName, quizType, timer, questions } = req.body
+        const createdQuiz = await Quiz.create({ quizName, quizType, timer, createdBy: user, questions })
         res.status(200).json({
             status: "Success",
             message: "Quiz created successfully.",
@@ -26,12 +28,13 @@ router.post('/create', async (req, res) => {
 })
 
 // get all quizs
-router.get('/', async (req, res) => {
+router.get('/', isLoggedIn, async (req, res) => {
     try {
-        const { createdby, sortcondition } = req.headers
+        const user = req.user
+        const { sortcondition } = req.headers
         const quizs = sortcondition ?
-            await Quiz.find({ createdBy: createdby }).sort(JSON.parse(sortcondition))
-            : await Quiz.find({ createdBy: createdby })
+            await Quiz.find({ createdBy: user }).sort(JSON.parse(sortcondition))
+            : await Quiz.find({ createdBy: user })
         res.json({
             status: "Success",
             quizs
@@ -42,17 +45,18 @@ router.get('/', async (req, res) => {
 })
 
 // for delete quiz
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', isLoggedIn, async (req, res) => {
     try {
+        const user = req.user
         const { id } = req.params
-        const quiz = await Quiz.findOne({ _id: id })
+        const quiz = await Quiz.findOne({ _id: id, createdBy: user })
         if (!quiz) {
             return res.json({
                 status: "Failed",
                 message: "Quiz does not exists."
             })
         }
-        await Quiz.deleteOne({ _id: id })
+        await Quiz.deleteOne({ _id: id, createdBy: user })
         res.json({
             status: "Success",
             message: "Deleted quiz successfully."
@@ -102,15 +106,12 @@ router.patch('/submit/:id', async (req, res) => {
         }
 
         const { submittedAnswers } = req.body
-        // console.log(quiz.questions)
         let score = 0
 
         // increasing count of which option is selected for each question
         quiz.questions.forEach((question, idx) => {
             const questionId = question.id
             const selectedOption = submittedAnswers[questionId]
-            // console.log(selectedOption)
-            // console.log(quiz.questions[idx].submissionCount[selectedOption])
             if (question.correctAnswer === selectedOption) {
                 score++
             }
@@ -130,11 +131,11 @@ router.patch('/submit/:id', async (req, res) => {
 })
 
 // get quiz details for analysis
-router.get('/analysis/:id', async (req, res) => {
+router.get('/analysis/:id', isLoggedIn, async (req, res) => {
     try {
-        const { createdby } = req.headers
+        const user = req.user
         const { id } = req.params
-        const quiz = await Quiz.findOne({ createdBy: createdby, _id: id })
+        const quiz = await Quiz.findOne({ createdBy: user, _id: id })
         if (!quiz) {
             return res.json({
                 status: "Failed",
@@ -151,12 +152,12 @@ router.get('/analysis/:id', async (req, res) => {
 })
 
 // edit/update quiz
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', isLoggedIn, async (req, res) => {
     try {
+        const user = req.user
         const { id } = req.params
-        const { createdby } = req.headers
         const { questions, timer } = req.body
-        const quiz = await Quiz.findOne({ _id: id, createdBy: createdby })
+        const quiz = await Quiz.findOne({ _id: id, createdBy: user })
         if (!quiz) {
             return res.json({
                 status: "Failed",

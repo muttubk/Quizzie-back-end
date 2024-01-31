@@ -79,7 +79,7 @@ const quizSchema = mongoose.Schema({
     },
     timer: {
         type: String,
-        enum: ['OFF', 5, 10],
+        enum: ['OFF', '5', '10'],
         default: 'OFF'
     },
     questions: {

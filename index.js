@@ -12,9 +12,6 @@ app.use(cors())
 
 const PORT = process.env.PORT || 4000
 
-// const User = require('./models/user')
-// const Quiz = require('./models/quiz')
-
 const User = require('./routes/user')
 const Quiz = require('./routes/quiz')
 
